@@ -83,16 +83,7 @@ class TrainerTester(object):
         res[np.argmax(output)] = 1
         return res
 
-    def save(self):
-        # name is seconds since the Epoch (January 1st, 1970)
-        name = int(time.time())
-
-        ofile = open(str(name)+'.csv', "wb")
-        writer = csv.writer(ofile, delimiter=',')
-        writer.writerow((self.network.sizes, 111, 666))
-        ofile.close()
-
-    def train(self):
+    def train(self, writer):
         for epoch in xrange(0, self.epochs_num):
             minibatch_count = 0
             while not self.epoch_end():
@@ -112,14 +103,18 @@ class TrainerTester(object):
                 self.update_network()
 
                 minibatch_count += 1
-                print "epoch_"+str(epoch+1)+", minibatch_"+str(minibatch_count)
-                break
+                # print "epoch_"+str(epoch+1)+", minibatch_"+str(minibatch_count)
+
             # evaluate in every epoch to get more results.
-            print "epoch "+str(epoch+1)
-            self.test()
+            score = self.test()
+            # save the parameters to csv file
+            writer.writerow(["%.3f" % score, self.minibatch_size, self.learning_rate, epoch+1]+self.network.sizes)
 
             # reinitialize epoch array
             self.epoch_array = np.zeros((len(self.train_labels), 1))
+
+        # return the score of the highest epoch
+        return score
 
         # when training and testing is done, play the alert tone
         # self.song.play()
@@ -132,6 +127,4 @@ class TrainerTester(object):
             self.evaluate(output, label)
 
         score = float(self.score)/len(self.test_labels) * 100
-        print score
-
-        self.save()
+        return score
