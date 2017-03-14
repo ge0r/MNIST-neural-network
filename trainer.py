@@ -1,5 +1,7 @@
 import numpy as np
 import pyglet
+import csv
+import time
 
 import input
 
@@ -81,6 +83,15 @@ class TrainerTester(object):
         res[np.argmax(output)] = 1
         return res
 
+    def save(self):
+        # name is seconds since the Epoch (January 1st, 1970)
+        name = int(time.time())
+
+        ofile = open(str(name)+'.csv', "wb")
+        writer = csv.writer(ofile, delimiter=',')
+        writer.writerow((self.network.sizes, 111, 666))
+        ofile.close()
+
     def train(self):
         for epoch in xrange(0, self.epochs_num):
             minibatch_count = 0
@@ -102,14 +113,25 @@ class TrainerTester(object):
 
                 minibatch_count += 1
                 print "epoch_"+str(epoch+1)+", minibatch_"+str(minibatch_count)
+                break
+            # evaluate in every epoch to get more results.
+            print "epoch "+str(epoch+1)
+            self.test()
+
             # reinitialize epoch array
             self.epoch_array = np.zeros((len(self.train_labels), 1))
 
+        # when training and testing is done, play the alert tone
+        # self.song.play()
+
     def test(self):
+        self.score = 0
         for image, label in zip(self.test_images, self.test_labels):
             self.network.initialize_input_layer(image)
             output = self.network.feed_forward()
             self.evaluate(output, label)
 
-        print float(self.score)/len(self.test_labels) * 100
-        self.song.play()
+        score = float(self.score)/len(self.test_labels) * 100
+        print score
+
+        self.save()

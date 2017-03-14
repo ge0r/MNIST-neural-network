@@ -1,7 +1,5 @@
 import numpy as np
-import math
-
-import input
+import time
 
 class Network(object):
     def __init__(self, sizes):
@@ -18,6 +16,14 @@ class Network(object):
         self.init_layers()
         self.create_biases()
         self.create_weights()
+
+    # loads weights and biases from file network.prm in this module's directory
+    def load_params(self):
+        pass
+
+    # saves the weights and biases
+    def save_params(self):
+        pass
 
     def init_layers(self):
         for neuron_num in self.sizes:
