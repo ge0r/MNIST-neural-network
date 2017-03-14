@@ -48,10 +48,12 @@ class TrainerTester(object):
 
     def output_error(self, label):
         last_z = self.network.Z[-1]
+
+        # the error is the derivative of the cost function (mean squared error/MSE function for this case)
         error = (self.network.output - label) * self.network.activation_diff(last_z)
         return error
 
-    # packpropagation finds the errors of every layer
+    # backpropagation finds the errors of every layer
     def backpropagation(self, img_id):
         hidden_layers_num = self.net_layers_num - 2
         # loop from last hidden layer to first hidden layer
@@ -83,7 +85,7 @@ class TrainerTester(object):
         res[np.argmax(output)] = 1
         return res
 
-    def train(self, writer):
+    def train(self):
         for epoch in xrange(0, self.epochs_num):
             minibatch_count = 0
             while not self.epoch_end():
@@ -107,8 +109,13 @@ class TrainerTester(object):
 
             # evaluate in every epoch to get more results.
             score = self.test()
+            print "epoch_"+str(epoch+1)+", score_"+str(score)+", h_"+str(self.learning_rate)
+
             # save the parameters to csv file
-            writer.writerow(["%.3f" % score, self.minibatch_size, self.learning_rate, epoch+1]+self.network.sizes)
+            ofile = open('csvs/L'+str(len(self.network.sizes))+'.csv', "a")
+            writer = csv.writer(ofile, delimiter=',')
+            writer.writerow(["%.3f" % score, self.learning_rate, self.minibatch_size, epoch+1]+self.network.sizes)
+            ofile.close()
 
             # reinitialize epoch array
             self.epoch_array = np.zeros((len(self.train_labels), 1))
